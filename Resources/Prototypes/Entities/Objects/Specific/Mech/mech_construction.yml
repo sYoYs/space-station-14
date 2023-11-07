@@ -282,6 +282,180 @@
     node: start
     defaultTarget: honker
 
+# Durand
+
+- type: entity
+  parent: BaseMechPart
+  id: BaseDurandPart
+  abstract: true
+  components:
+  - type: Sprite
+    drawdepth: Items
+    noRot: false
+    sprite: Objects/Specific/Mech/durand_construction.rsi
+
+- type: entity
+  id: BaseDurandPartItem
+  parent: BaseDurandPart
+  abstract: true
+  components:
+  - type: Item
+    size: Ginormous
+
+- type: entity
+  parent: BaseDurandPart
+  id: DurandFrame
+  name: Durand frame
+  description: Ultra-strong metal frame with standard sockets for limbs and synthetic pseudo-muscle fasteners
+  components:
+  - type: Appearance
+  - type: ItemMapper
+    mapLayers:
+      durand_harness+o:
+        whitelist:
+          tags:
+          - DurandHarness
+      durand_head+o:
+        whitelist:
+          tags:
+          - DurandHead
+      durand_l_arm+o:
+        whitelist:
+          tags:
+          - DurandLArm
+      durand_r_arm+o:
+        whitelist:
+          tags:
+          - DurandRArm
+      durand_l_leg+o:
+        whitelist:
+          tags:
+          - DurandLLeg
+      durand_r_leg+o:
+        whitelist:
+          tags:
+          - DurandRLeg
+    sprite: Objects/Specific/Mech/durand_construction.rsi
+  - type: ContainerContainer
+    containers:
+      mech-assembly-container: !type:Container
+  - type: MechAssembly
+    finishedPrototype: DurandChassis
+    requiredParts:
+      DurandHead: false
+      DurandHarness: false
+      DurandLArm: false
+      DurandRArm: false
+      DurandLLeg: false
+      DurandRLeg: false
+  - type: Sprite
+    state: durand_frame
+    noRot: true
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandLArm
+  name: Durand left arm
+  description: Durand's detail. Data and power connectors are compatible with most exo-suit tools and weapons. Also deals a really strong blow.
+  components:
+  - type: Sprite
+    state: durand_l_arm
+  - type: Tag
+    tags:
+    - DurandLArm
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandLLeg
+  name: Durand left leg
+  description: Durand's detail. Designed especially solidly to withstand Durand's heavy weight and defensive needs.
+  components:
+  - type: Sprite
+    state: durand_l_leg
+  - type: Tag
+    tags:
+    - DurandLLeg
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandRLeg
+  name: Durand right leg
+  description: Durand's detail. Designed especially solidly to withstand Durand's heavy weight and defensive needs.
+  components:
+  - type: Sprite
+    state: durand_r_leg
+  - type: Tag
+    tags:
+    - DurandRLeg
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandRArm
+  name: Durand right arm
+  description: Durand's detail. Data and power connectors are compatible with most exo-suit tools and weapons. Also deals a really strong blow.
+  components:
+  - type: Sprite
+    state: durand_r_arm
+  - type: Tag
+    tags:
+    - DurandRArm
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandHead
+  name: Durand head
+  description: Durand's detail. Houses advanced surveillance and targeting sensors.
+  components:
+  - type: Sprite
+    state: durand_head
+  - type: Tag
+    tags:
+    - DurandHead
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandHarness
+  name: Durand torso
+  description: Durand's detail. It contains a power supply unit, a processing core and life support systems in a durable protective housing.
+  components:
+  - type: Sprite
+    state: durand_harness
+  - type: Tag
+    tags:
+    - DurandHarness
+
+- type: entity
+  parent: BaseDurandPartItem
+  id: DurandArmor
+  name: Durand armor
+  description: A set of armor plates for Durand. Designed to be extremely heavy to withstand an incredible amount of damage.
+  components:
+  - type: Sprite
+    state: durand_armor
+  - type: Tag
+    tags:
+    - DurandArmor
+
+- type: entity
+  id: DurandChassis
+  parent: BaseDurandPart
+  name: Durand chassis
+  description: An in-progress construction of a Durand mech.
+  components:
+  - type: Appearance
+  - type: ContainerContainer
+    containers:
+      battery-container: !type:Container
+  - type: MechAssemblyVisuals
+    statePrefix: durand
+  - type: Sprite
+    noRot: true
+    state: durand0
+  - type: Construction
+    graph: Durand
+    node: start
+    defaultTarget: durand
+
 # H.A.M.T.R.
 
 - type: entity
