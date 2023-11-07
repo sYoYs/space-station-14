@@ -163,6 +163,54 @@
       mech-battery-slot:
       - PowerCellHigh
 
+# Durand
+
+- type: entity
+  parent: BaseMech
+  id: MechDurand
+  name: Durand
+  description: "An outdated combat exoskeleton used by the Nanotrasen Corporation. Super heavy and slow, but very durable. Originally designed to combat hostile alien life forms."
+  components:
+  - type: Sprite
+    drawdepth: Mobs
+    noRot: true
+    sprite: Objects/Specific/Mech/mecha.rsi
+    layers:
+    - map: [ "enum.MechVisualLayers.Base" ]
+      state: durand
+  - type: FootstepModifier
+    footstepSoundCollection:
+      path: /Audio/Mecha/sound_mecha_powerloader_step.ogg
+  - type: Mech
+    baseState: durand
+    openState: durand-open
+    brokenState: durand-broken
+    maxIntegrity: 400
+    mechToPilotDamageMultiplier: 0.2
+    pilotWhitelist:
+      components:
+      - HumanoidAppearance
+  - type: MeleeWeapon
+    hidden: true
+    attackRate: 1.1
+    damage:
+      types:
+        Blunt: 45
+        Structural: 250
+  - type: MovementSpeedModifier
+    baseWalkSpeed: 1
+    baseSprintSpeed: 1.5
+
+- type: entity
+  parent: MechDurand
+  id: MechDurandBattery
+  suffix: Battery
+  components:
+  - type: ContainerFill
+    containers:
+      mech-battery-slot:
+      - PowerCellHigh
+
 - type: entity
   parent: BaseMech
   id: MechHamtr

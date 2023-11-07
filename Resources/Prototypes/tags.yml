@@ -234,7 +234,7 @@
 
 - type: Tag
   id: CanPilot
-  
+
 - type: Tag
   id: CannonRestrict
 
@@ -415,6 +415,36 @@
 
 - type: Tag
   id: Duck
+
+- type: Tag
+  id: DurandCentralControlModule
+
+- type: Tag
+  id: DurandPeripheralsControlModule
+
+- type: Tag
+  id: DurandTargetingControlModule
+
+- type: Tag
+  id: DurandHead
+
+- type: Tag
+  id: DurandHarness
+
+- type: Tag
+  id: DurandLArm
+
+- type: Tag
+  id: DurandRArm
+
+- type: Tag
+  id: DurandLLeg
+
+- type: Tag
+  id: DurandRLeg
+
+- type: Tag
+  id: DurandArmor
 
 - type: Tag
   id: Ectoplasm

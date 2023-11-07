@@ -426,6 +426,7 @@ public sealed class TagSystem : EntitySystem
     /// <summary>
     ///     Checks if any of the given tags have been added.
     /// </summary>
+    /// <param name="component"></param>
     /// <param name="ids">The tags to check for.</param>
     /// <returns>true if any of them exist, false otherwise.</returns>
     /// <exception cref="UnknownPrototypeException">
