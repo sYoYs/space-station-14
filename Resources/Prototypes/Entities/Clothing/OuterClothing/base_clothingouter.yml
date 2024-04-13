@@ -22,6 +22,7 @@
   - type: ClothingSpeedModifier
     walkModifier: 0.9
     sprintModifier: 0.9
+  - type: HeldSpeedModifier
 
 - type: entity
   abstract: true
@@ -29,7 +30,8 @@
   id: ClothingOuterStorageBase
   components:
   - type: Storage
-    maxTotalWeight: 6
+    grid:
+    - 0,0,2,1
   - type: ContainerContainer
     containers:
       storagebase: !type:Container
@@ -40,6 +42,48 @@
       type: StorageBoundUserInterface
   - type: StaticPrice
     price: 80
+
+- type: entity
+  abstract: true
+  parent: [ClothingOuterStorageBase, BaseFoldable]
+  id: ClothingOuterStorageFoldableBase
+  components:
+  - type: Appearance
+  - type: Foldable
+    canFoldInsideContainer: true
+    unfoldVerbText: fold-zip-verb
+    foldVerbText: fold-unzip-verb
+  - type: FoldableClothing
+    foldedEquippedPrefix: open
+    foldedHeldPrefix: open
+  - type: Sprite
+    layers:
+    - state: icon
+      map: [ "unfoldedLayer" ]
+    - state: icon-open
+      map: ["foldedLayer"]
+      visible: false
+
+- type: entity
+  abstract: true
+  parent: ClothingOuterStorageFoldableBase
+  id: ClothingOuterStorageFoldableBaseOpened
+  suffix: opened
+  components:
+  - type: Foldable
+    folded: true
+  - type: Clothing
+    equippedPrefix: open
+  - type: Item
+    heldPrefix: open
+  - type: Sprite
+    layers:
+    - state: icon
+      map: [ "unfoldedLayer" ]
+      visible: false
+    - state: icon-open
+      map: ["foldedLayer"]
+      visible: true
 
 - type: entity
   abstract: true
@@ -69,6 +113,7 @@
   - type: ClothingSpeedModifier
     walkModifier: 0.4
     sprintModifier: 0.6
+  - type: HeldSpeedModifier
   - type: Item
     size: Ginormous
   - type: Armor
@@ -104,6 +149,7 @@
   - type: ClothingSpeedModifier
     walkModifier: 0.8
     sprintModifier: 0.8
+  - type: HeldSpeedModifier
   - type: Item
     size: Huge
 
@@ -129,6 +175,3 @@
   components:
   - type: Item
     size: Huge
-  - type: Clothing
-    slots:
-    - outerClothing

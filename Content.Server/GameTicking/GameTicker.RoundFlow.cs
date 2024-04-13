@@ -4,6 +4,7 @@ using Content.Server.Discord;
 using Content.Server.GameTicking.Events;
 using Content.Server.Ghost;
 using Content.Server.Maps;
+using Content.Shared.CCVar;
 using Content.Shared.Database;
 using Content.Shared.GameTicking;
 using Content.Shared.Mind;
@@ -41,13 +42,14 @@ namespace Content.Server.GameTicking
 #endif
 
         [ViewVariables]
-        private TimeSpan _roundStartTimeSpan;
-
-        [ViewVariables]
         private bool _startingRound;
 
         [ViewVariables]
         private GameRunLevel _runLevel;
+
+        private RoundEndMessageEvent.RoundEndPlayerInfo[]? _replayRoundPlayerInfo;
+
+        private string? _replayRoundText;
 
         [ViewVariables]
         public GameRunLevel RunLevel
@@ -163,6 +165,8 @@ namespace Content.Server.GameTicking
 
             var gridIds = _map.LoadMap(targetMapId, ev.GameMap.MapPath.ToString(), ev.Options);
 
+            _metaData.SetEntityName(_mapManager.GetMapEntityId(targetMapId), "Station map");
+
             var gridUids = gridIds.ToList();
             RaiseLocalEvent(new PostGameMapLoad(map, targetMapId, gridUids, stationName));
 
@@ -191,26 +195,18 @@ namespace Content.Server.GameTicking
 
             SendServerMessage(Loc.GetString("game-ticker-start-round"));
 
-            // Just in case it hasn't been loaded previously we'll try loading it.
-            LoadMaps();
-
-            // map has been selected so update the lobby info text
-            // applies to players who didn't ready up
-            UpdateInfoText();
-
-            StartGamePresetRules();
-
-            RoundLengthMetric.Set(0);
-
-            var startingEvent = new RoundStartingEvent(RoundId);
-            RaiseLocalEvent(startingEvent);
             var readyPlayers = new List<ICommonSession>();
             var readyPlayerProfiles = new Dictionary<NetUserId, HumanoidCharacterProfile>();
-
+            var autoDeAdmin = _cfg.GetCVar(CCVars.AdminDeadminOnJoin);
             foreach (var (userId, status) in _playerGameStatuses)
             {
                 if (LobbyEnabled && status != PlayerGameStatus.ReadyToPlay) continue;
                 if (!_playerManager.TryGetSessionById(userId, out var session)) continue;
+
+                if (autoDeAdmin && _adminManager.IsAdmin(session))
+                {
+                    _adminManager.DeAdmin(session);
+                }
 #if DEBUG
                 DebugTools.Assert(_userDb.IsLoadComplete(session), $"Player was readied up but didn't have user DB data loaded yet??");
 #endif
@@ -232,6 +228,20 @@ namespace Content.Server.GameTicking
                 readyPlayerProfiles.Add(userId, profile);
             }
 
+            // Just in case it hasn't been loaded previously we'll try loading it.
+            LoadMaps();
+
+            // map has been selected so update the lobby info text
+            // applies to players who didn't ready up
+            UpdateInfoText();
+
+            StartGamePresetRules();
+
+            RoundLengthMetric.Set(0);
+
+            var startingEvent = new RoundStartingEvent(RoundId);
+            RaiseLocalEvent(startingEvent);
+
             var origReadyPlayers = readyPlayers.ToArray();
 
             if (!StartPreset(origReadyPlayers, force))
@@ -245,7 +255,7 @@ namespace Content.Server.GameTicking
             _roundStartDateTime = DateTime.UtcNow;
             RunLevel = GameRunLevel.InRound;
 
-            _roundStartTimeSpan = _gameTiming.CurTime;
+            RoundStartTimeSpan = _gameTiming.CurTime;
             SendStatusToAll();
             ReqWindowAttentionAll();
             UpdateLateJoinStatus();
@@ -297,12 +307,6 @@ namespace Content.Server.GameTicking
             _sawmill.Info("Ending round!");
 
             RunLevel = GameRunLevel.PostRound;
-
-            // The lobby song is set here instead of in RestartRound,
-            // because ShowRoundEndScoreboard triggers the start of the music playing
-            // at the end of a round, and this needs to be set before RestartRound
-            // in order for the lobby song status display to be accurate.
-            LobbySong = _robustRandom.Pick(_lobbyMusicCollection.PickFiles).ToString();
 
             ShowRoundEndScoreboard(text);
             SendRoundEndDiscordMessage();
@@ -360,7 +364,9 @@ namespace Content.Server.GameTicking
                     playerIcName = icName;
 
                 if (TryGetEntity(mind.OriginalOwnedEntity, out var entity))
-                    _pvsOverride.AddGlobalOverride(entity.Value, recursive: true);
+                {
+                    _pvsOverride.AddGlobalOverride(GetNetEntity(entity.Value), recursive: true);
+                }
 
                 var roles = _roles.MindGetAllRoles(mindId);
 
@@ -371,11 +377,14 @@ namespace Content.Server.GameTicking
                     PlayerOOCName = contentPlayerData?.Name ?? "(IMPOSSIBLE: REGISTERED MIND WITH NO OWNER)",
                     // Character name takes precedence over current entity name
                     PlayerICName = playerIcName,
+                    PlayerGuid = userId,
                     PlayerNetEntity = GetNetEntity(entity),
                     Role = antag
                         ? roles.First(role => role.Antagonist).Name
                         : roles.FirstOrDefault().Name ?? Loc.GetString("game-ticker-unknown-role"),
                     Antag = antag,
+                    JobPrototypes = roles.Where(role => !role.Antagonist).Select(role => role.Prototype).ToArray(),
+                    AntagPrototypes = roles.Where(role => role.Antagonist).Select(role => role.Prototype).ToArray(),
                     Observer = observer,
                     Connected = connected
                 };
@@ -384,10 +393,22 @@ namespace Content.Server.GameTicking
 
             // This ordering mechanism isn't great (no ordering of minds) but functions
             var listOfPlayerInfoFinal = listOfPlayerInfo.OrderBy(pi => pi.PlayerOOCName).ToArray();
+            var sound = RoundEndSoundCollection == null ? null : _audio.GetSound(new SoundCollectionSpecifier(RoundEndSoundCollection));
 
-            RaiseNetworkEvent(new RoundEndMessageEvent(gamemodeTitle, roundEndText, roundDuration, RoundId,
-                listOfPlayerInfoFinal.Length, listOfPlayerInfoFinal, LobbySong,
-                new SoundCollectionSpecifier("RoundEnd").GetSound()));
+            var roundEndMessageEvent = new RoundEndMessageEvent(
+                gamemodeTitle,
+                roundEndText,
+                roundDuration,
+                RoundId,
+                listOfPlayerInfoFinal.Length,
+                listOfPlayerInfoFinal,
+                sound
+            );
+            RaiseNetworkEvent(roundEndMessageEvent);
+            RaiseLocalEvent(roundEndMessageEvent);
+
+            _replayRoundPlayerInfo = listOfPlayerInfoFinal;
+            _replayRoundText = roundEndText;
         }
 
         private async void SendRoundEndDiscordMessage()
@@ -502,29 +523,9 @@ namespace Content.Server.GameTicking
             RaiseLocalEvent(ev);
 
             // So clients' entity systems can clean up too...
-            RaiseNetworkEvent(ev, Filter.Broadcast());
+            RaiseNetworkEvent(ev);
 
-            // Delete all entities.
-            foreach (var entity in EntityManager.GetEntities().ToArray())
-            {
-#if EXCEPTION_TOLERANCE
-                try
-                {
-#endif
-                // TODO: Maybe something less naive here?
-                // FIXME: Actually, definitely.
-                if (!Deleted(entity) && !Terminating(entity))
-                    EntityManager.DeleteEntity(entity);
-#if EXCEPTION_TOLERANCE
-                }
-                catch (Exception e)
-                {
-                    _sawmill.Error($"Caught exception while trying to delete entity {ToPrettyString(entity)}, this might corrupt the game state...");
-                    _runtimeLog.LogException(e, nameof(GameTicker));
-                    continue;
-                }
-#endif
-            }
+            EntityManager.FlushEntities();
 
             _mapManager.Restart();
 
@@ -542,7 +543,7 @@ namespace Content.Server.GameTicking
             _playerGameStatuses.Clear();
             foreach (var session in _playerManager.Sessions)
             {
-                _playerGameStatuses[session.UserId] = LobbyEnabled ?  PlayerGameStatus.NotReadyToPlay : PlayerGameStatus.ReadyToPlay;
+                _playerGameStatuses[session.UserId] = LobbyEnabled ? PlayerGameStatus.NotReadyToPlay : PlayerGameStatus.ReadyToPlay;
             }
         }
 
@@ -557,7 +558,7 @@ namespace Content.Server.GameTicking
 
             RaiseNetworkEvent(new TickerLobbyCountdownEvent(_roundStartTime, Paused));
 
-            _chatManager.DispatchServerAnnouncement(Loc.GetString("game-ticker-delay-start", ("seconds",time.TotalSeconds)));
+            _chatManager.DispatchServerAnnouncement(Loc.GetString("game-ticker-delay-start", ("seconds", time.TotalSeconds)));
 
             return true;
         }
@@ -591,7 +592,7 @@ namespace Content.Server.GameTicking
 
         public TimeSpan RoundDuration()
         {
-            return _gameTiming.CurTime.Subtract(_roundStartTimeSpan);
+            return _gameTiming.CurTime.Subtract(RoundStartTimeSpan);
         }
 
         private void AnnounceRound()
@@ -609,7 +610,7 @@ namespace Content.Server.GameTicking
                 _chatSystem.DispatchGlobalAnnouncement(Loc.GetString(proto.Message), playSound: true);
 
             if (proto.Sound != null)
-                SoundSystem.Play(proto.Sound.GetSound(), Filter.Broadcast());
+                _audio.PlayGlobal(proto.Sound, Filter.Broadcast(), true);
         }
 
         private async void SendRoundStartedDiscordMessage()

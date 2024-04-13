@@ -1,4 +1,3 @@
-using Content.Shared.ActionBlocker;
 using Content.Shared.Interaction;
 using Content.Shared.Storage;
 using JetBrains.Annotations;
@@ -14,7 +13,6 @@ namespace Content.Server.Interaction
     [UsedImplicitly]
     public sealed partial class InteractionSystem : SharedInteractionSystem
     {
-        [Dependency] private readonly ActionBlockerSystem _actionBlockerSystem = default!;
         [Dependency] private readonly SharedContainerSystem _container = default!;
         [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
 
@@ -48,7 +46,7 @@ namespace Content.Server.Interaction
 
         private void HandleUserInterfaceRangeCheck(ref BoundUserInterfaceCheckRangeEvent ev)
         {
-            if (ev.Player.AttachedEntity is not { } user)
+            if (ev.Player.AttachedEntity is not { } user || ev.Result == BoundUserInterfaceRangeResult.Fail)
                 return;
 
             if (InRangeUnobstructed(user, ev.Target, ev.UserInterface.InteractionRange))

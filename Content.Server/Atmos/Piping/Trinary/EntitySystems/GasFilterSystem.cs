@@ -36,7 +36,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             SubscribeLocalEvent<GasFilterComponent, ComponentInit>(OnInit);
             SubscribeLocalEvent<GasFilterComponent, AtmosDeviceUpdateEvent>(OnFilterUpdated);
             SubscribeLocalEvent<GasFilterComponent, AtmosDeviceDisabledEvent>(OnFilterLeaveAtmosphere);
-            SubscribeLocalEvent<GasFilterComponent, InteractHandEvent>(OnFilterInteractHand);
+            SubscribeLocalEvent<GasFilterComponent, ActivateInWorldEvent>(OnFilterActivate);
             SubscribeLocalEvent<GasFilterComponent, GasAnalyzerScanEvent>(OnFilterAnalyzed);
             // Bound UI subscriptions
             SubscribeLocalEvent<GasFilterComponent, GasFilterChangeRateMessage>(OnTransferRateChangeMessage);
@@ -50,14 +50,10 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             UpdateAppearance(uid, filter);
         }
 
-        private void OnFilterUpdated(EntityUid uid, GasFilterComponent filter, AtmosDeviceUpdateEvent args)
+        private void OnFilterUpdated(EntityUid uid, GasFilterComponent filter, ref AtmosDeviceUpdateEvent args)
         {
             if (!filter.Enabled
-                || !EntityManager.TryGetComponent(uid, out NodeContainerComponent? nodeContainer)
-                || !EntityManager.TryGetComponent(uid, out AtmosDeviceComponent? device)
-                || !_nodeContainer.TryGetNode(nodeContainer, filter.InletName, out PipeNode? inletNode)
-                || !_nodeContainer.TryGetNode(nodeContainer, filter.FilterName, out PipeNode? filterNode)
-                || !_nodeContainer.TryGetNode(nodeContainer, filter.OutletName, out PipeNode? outletNode)
+                || !_nodeContainer.TryGetNodes(uid, filter.InletName, filter.FilterName, filter.OutletName, out PipeNode? inletNode, out PipeNode? filterNode, out PipeNode? outletNode)
                 || outletNode.Air.Pressure >= Atmospherics.MaxOutputPressure) // No need to transfer if target is full.
             {
                 _ambientSoundSystem.SetAmbience(uid, false);
@@ -65,7 +61,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             }
 
             // We multiply the transfer rate in L/s by the seconds passed since the last process to get the liters.
-            var transferVol = filter.TransferRate * args.dt;
+            var transferVol = filter.TransferRate * _atmosphereSystem.PumpSpeedup() * args.dt;
 
             if (transferVol <= 0)
             {
@@ -90,7 +86,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             _atmosphereSystem.Merge(outletNode.Air, removed);
         }
 
-        private void OnFilterLeaveAtmosphere(EntityUid uid, GasFilterComponent filter, AtmosDeviceDisabledEvent args)
+        private void OnFilterLeaveAtmosphere(EntityUid uid, GasFilterComponent filter, ref AtmosDeviceDisabledEvent args)
         {
             filter.Enabled = false;
 
@@ -101,7 +97,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             _userInterfaceSystem.TryCloseAll(uid, GasFilterUiKey.Key);
         }
 
-        private void OnFilterInteractHand(EntityUid uid, GasFilterComponent filter, InteractHandEvent args)
+        private void OnFilterActivate(EntityUid uid, GasFilterComponent filter, ActivateInWorldEvent args)
         {
             if (!EntityManager.TryGetComponent(args.User, out ActorComponent? actor))
                 return;
@@ -167,7 +163,7 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
                 }
                 else
                 {
-                    Logger.Warning("atmos", $"{ToPrettyString(uid)} received GasFilterSelectGasMessage with an invalid ID: {args.ID}");
+                    Log.Warning($"{ToPrettyString(uid)} received GasFilterSelectGasMessage with an invalid ID: {args.ID}");
                 }
             }
             else
@@ -187,16 +183,15 @@ namespace Content.Server.Atmos.Piping.Trinary.EntitySystems
             if (!EntityManager.TryGetComponent(uid, out NodeContainerComponent? nodeContainer))
                 return;
 
-            var gasMixDict = new Dictionary<string, GasMixture?>();
+            args.GasMixtures ??= new Dictionary<string, GasMixture?>();
 
             if(_nodeContainer.TryGetNode(nodeContainer, component.InletName, out PipeNode? inlet))
-                gasMixDict.Add(Loc.GetString("gas-analyzer-window-text-inlet"), inlet.Air);
+                args.GasMixtures.Add(Loc.GetString("gas-analyzer-window-text-inlet"), inlet.Air);
             if(_nodeContainer.TryGetNode(nodeContainer, component.FilterName, out PipeNode? filterNode))
-                gasMixDict.Add(Loc.GetString("gas-analyzer-window-text-filter"), filterNode.Air);
+                args.GasMixtures.Add(Loc.GetString("gas-analyzer-window-text-filter"), filterNode.Air);
             if(_nodeContainer.TryGetNode(nodeContainer, component.OutletName, out PipeNode? outlet))
-                gasMixDict.Add(Loc.GetString("gas-analyzer-window-text-outlet"), outlet.Air);
+                args.GasMixtures.Add(Loc.GetString("gas-analyzer-window-text-outlet"), outlet.Air);
 
-            args.GasMixtures = gasMixDict;
             args.DeviceFlipped = inlet != null && filterNode != null && inlet.CurrentPipeDirection.ToDirection() == filterNode.CurrentPipeDirection.ToDirection().GetClockwise90Degrees();
         }
     }

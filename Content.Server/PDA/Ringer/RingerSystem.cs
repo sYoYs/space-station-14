@@ -13,6 +13,7 @@ using Robust.Shared.Player;
 using Robust.Shared.Random;
 using Robust.Shared.Timing;
 using Robust.Shared.Utility;
+using Robust.Server.Audio;
 
 namespace Content.Server.PDA.Ringer
 {
@@ -61,13 +62,16 @@ namespace Content.Server.PDA.Ringer
             UpdateRingerUserInterface(uid, ringer, true);
         }
 
-        public void RingerPlayRingtone(EntityUid uid, RingerComponent ringer)
+        public void RingerPlayRingtone(Entity<RingerComponent?> ent)
         {
-            EnsureComp<ActiveRingerComponent>(uid);
+            if (!Resolve(ent, ref ent.Comp))
+                return;
 
-            _popupSystem.PopupEntity(Loc.GetString("comp-ringer-vibration-popup"), uid, Filter.Pvs(uid, 0.05f), false, PopupType.Small);
+            EnsureComp<ActiveRingerComponent>(ent);
 
-            UpdateRingerUserInterface(uid, ringer, true);
+            _popupSystem.PopupEntity(Loc.GetString("comp-ringer-vibration-popup"), ent, Filter.Pvs(ent, 0.05f), false, PopupType.Medium);
+
+            UpdateRingerUserInterface(ent, ent.Comp, true);
         }
 
         private void UpdateRingerUserInterfaceDriver(EntityUid uid, RingerComponent ringer, RingerRequestUpdateInterfaceMessage args)
@@ -203,7 +207,7 @@ namespace Content.Server.PDA.Ringer
                 ringer.TimeElapsed -= NoteDelay;
                 var ringerXform = Transform(uid);
 
-                _audio.Play(
+                _audio.PlayEntity(
                     GetSound(ringer.Ringtone[ringer.NoteCount]),
                     Filter.Empty().AddInRange(ringerXform.MapPosition, ringer.Range),
                     uid,

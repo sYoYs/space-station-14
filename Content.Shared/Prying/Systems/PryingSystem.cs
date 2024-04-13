@@ -8,6 +8,8 @@ using Content.Shared.Doors.Components;
 using System.Diagnostics.CodeAnalysis;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
+using Robust.Shared.Audio;
+using Robust.Shared.Audio.Systems;
 using PryUnpoweredComponent = Content.Shared.Prying.Components.PryUnpoweredComponent;
 
 namespace Content.Shared.Prying.Systems;
@@ -72,8 +74,8 @@ public sealed class PryingSystem : EntitySystem
 
         if (!CanPry(target, user, out var message, comp))
         {
-            if (message != null)
-                Popup.PopupEntity(Loc.GetString(message), target, user);
+            if (!string.IsNullOrWhiteSpace(message))
+                Popup.PopupClient(Loc.GetString(message), target, user);
             // If we have reached this point we want the event that caused this
             // to be marked as handled.
             return true;
@@ -134,8 +136,7 @@ public sealed class PryingSystem : EntitySystem
         var doAfterArgs = new DoAfterArgs(EntityManager, user, TimeSpan.FromSeconds(modEv.BaseTime * modEv.PryTimeModifier / toolModifier), new DoorPryDoAfterEvent(), target, target, tool)
         {
             BreakOnDamage = true,
-            BreakOnUserMove = true,
-            BreakOnWeightlessMove = true,
+            BreakOnMove = true,
         };
 
         if (tool != null)
@@ -156,10 +157,19 @@ public sealed class PryingSystem : EntitySystem
         if (args.Target is null)
             return;
 
-        PryingComponent? comp = null;
+        TryComp<PryingComponent>(args.Used, out var comp);
 
-        if (args.Used != null && Resolve(args.Used.Value, ref comp))
+        if (!CanPry(uid, args.User, out var message, comp))
+        {
+            if (!string.IsNullOrWhiteSpace(message))
+                Popup.PopupClient(Loc.GetString(message), uid, args.User);
+            return;
+        }
+
+        if (args.Used != null && comp != null)
+        {
             _audioSystem.PlayPredicted(comp.UseSound, args.Used.Value, args.User);
+        }
 
         var ev = new PriedEvent(args.User);
         RaiseLocalEvent(uid, ref ev);

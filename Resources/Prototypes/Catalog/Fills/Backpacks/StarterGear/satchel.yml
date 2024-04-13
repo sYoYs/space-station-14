@@ -74,6 +74,16 @@
 
 - type: entity
   noSpawn: true
+  parent: ClothingBackpackSatchelMedical
+  id: ClothingBackpackSatchelParamedicFilled
+  components:
+  - type: StorageFill
+    contents:
+      - id: BoxSurvivalMedical
+      - id: EmergencyRollerBedSpawnFolded
+
+- type: entity
+  noSpawn: true
   parent: ClothingBackpackSatchelCaptain
   id: ClothingBackpackSatchelCaptainFilled
   components:
@@ -204,6 +214,16 @@
       - id: BoxSurvival
       - id: Bible
       - id: RubberStampChaplain
+  
+- type: entity
+  noSpawn: true
+  parent: ClothingBackpackSatchel
+  id: ClothingBackpackSatchelLawyerFilled
+  components:
+  - type: StorageFill
+    contents:
+      - id: BoxSurvival
+      - id: RubberStampLawyer
 
 - type: entity
   noSpawn: true
@@ -234,9 +254,9 @@
     - type: StorageFill
       contents:
       - id: BoxSurvival
+      - id: BoxForensicPad
       - id: Lighter
       - id: CigPackBlack
-      - id: BoxForensicPad
       - id: HandLabeler
 
 - type: entity
@@ -259,15 +279,6 @@
 
 - type: entity
   noSpawn: true
-  parent: ClothingBackpackSatchel
-  id: ClothingBackpackSatchelDrone
-  components:
-  - type: Tag
-    tags:
-    - InnateDontDelete
-
-- type: entity
-  noSpawn: true
   parent: ClothingBackpackSatchelMime
   id: ClothingBackpackSatchelMimeFilled
   components:
@@ -275,3 +286,14 @@
     contents:
       - id: BoxSurvival
       - id: RubberStampMime
+
+- type: entity
+  noSpawn: true
+  parent: ClothingBackpackSatchelHolding
+  id: ClothingBackpackSatchelHoldingAdmin
+  components:
+  - type: StorageFill
+    contents:
+    - id: GasAnalyzer
+    - id: trayScanner
+  - type: Unremoveable

@@ -52,6 +52,16 @@
 
 - type: entity
   noSpawn: true
+  parent: ClothingBackpackMedical
+  id: ClothingBackpackParamedicFilled
+  components:
+  - type: StorageFill
+    contents:
+      - id: BoxSurvivalMedical
+      - id: EmergencyRollerBedSpawnFolded
+
+- type: entity
+  noSpawn: true
   parent: ClothingBackpackCaptain
   id: ClothingBackpackCaptainFilled
   components:
@@ -192,6 +202,16 @@
       - id: BoxSurvival
       - id: Bible
       - id: RubberStampChaplain
+  
+- type: entity
+  noSpawn: true
+  parent: ClothingBackpack
+  id: ClothingBackpackLawyerFilled
+  components:
+  - type: StorageFill
+    contents:
+      - id: BoxSurvival
+      - id: RubberStampLawyer
 
 - type: entity
   noSpawn: true
@@ -242,7 +262,7 @@
         - id: RegenerativeMesh
         - id: BoxZiptie
         - id: CrowbarRed
-        - id: MagazinePistol
+        - id: MagazineMagnum
 
 - type: entity
   noSpawn: true
@@ -308,6 +328,27 @@
         - id: CrowbarRed
         - id: AdvMopItem
 
+- type: entity
+  noSpawn: true
+  parent: ClothingBackpackERTChaplain
+  id: ClothingBackpackERTChaplainFilled
+  components:
+    - type: StorageFill
+      contents:
+        - id: BoxSurvivalEngineering
+        - id: BoxCandle
+        - id: BoxBodyBag
+        - id: DrinkWaterMelonJuiceJug
+        - id: Lantern
+        - id: Lantern
+        - id: Bible
+        - id: CrowbarRed
+        - id: FoodBakedBunHotX
+        - id: FoodBakedBunHotX
+        - id: FoodBakedBunHotX
+        - id: FoodBakedBunHotX
+        - id: Lighter
+
 # Death Squad
 
 - type: entity
@@ -318,7 +359,8 @@
   description: Holds the kit of CentComm's most feared agents.
   components:
     - type: Storage
-      maxTotalWeight: 56
+      grid:
+      - 0,0,7,6
     - type: StorageFill
       contents:
         - id: BoxSurvivalEngineering
@@ -331,7 +373,7 @@
         - id: ToolDebug # spanish army knife
         - id: WelderExperimental
         - id: Hypospray
-        - id: MicroBombImplanter # crew will try to steal their amazing hardsuits
+        - id: DeathAcidifierImplanter # crew will try to steal their amazing hardsuits
         - id: FreedomImplanter
 
 # Cargo

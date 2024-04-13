@@ -11,6 +11,8 @@
   canBeAntag: false
   accessGroups:
   - AllAccess
+  access:
+  - CentralCommand
 
 - type: startingGear
   id: ERTLeaderGear
@@ -25,7 +27,7 @@
     id: ERTLeaderPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltSecurityFilled
-    pocket1: WeaponPistolMk58Nonlethal
+    pocket1: WeaponPistolN1984Nonlethal
     pocket2: FlashlightSeclite
 
 - type: startingGear
@@ -42,7 +44,7 @@
     id: ERTLeaderPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltSecurityFilled
-    pocket1: WeaponPistolMk58Nonlethal
+    pocket1: WeaponPistolN1984Nonlethal
     pocket2: FlashlightSeclite
 
 - type: startingGear
@@ -64,6 +66,61 @@
   inhand:
     - AirTankFilled
 
+# Chaplain
+- type: job
+  id: ERTChaplain
+  name: job-name-ertchaplain
+  description: job-description-ertchaplain
+  playTimeTracker: JobERTChaplain
+  setPreference: false
+  startingGear: ERTEngineerGearEVA
+  icon: "JobIconNanotrasen"
+  supervisors: job-supervisors-centcom
+  canBeAntag: false
+  accessGroups:
+  - AllAccess
+  access:
+  - CentralCommand
+  special:
+  - !type:AddComponentSpecial
+    components:
+    - type: BibleUser #Lets them heal with bibles
+
+- type: startingGear
+  id: ERTChaplainGear
+  equipment:
+    jumpsuit: ClothingUniformJumpsuitERTChaplain
+    back: ClothingBackpackERTChaplainFilled
+    shoes: ClothingShoesLeather
+    head: ClothingHeadHatFez
+    eyes: ClothingEyesGlasses
+    neck: ClothingNeckStoleChaplain
+    gloves: ClothingHandsGlovesCombat
+    outerClothing: ClothingOuterArmorBasicSlim
+    id: ERTEngineerPDA
+    ears: ClothingHeadsetAltCentCom
+    belt: ClothingBeltStorageWaistbag
+    pocket1: Flare
+    pocket2: DrinkWaterBottleFull
+
+- type: startingGear
+  id: ERTChaplainGearEVA
+  equipment:
+    jumpsuit: ClothingUniformJumpsuitERTChaplain
+    back: ClothingBackpackERTChaplainFilled
+    shoes: ClothingShoesBootsMagAdv
+    mask: ClothingMaskGasERT
+    eyes: ClothingEyesGlasses
+    neck: ClothingNeckStoleChaplain
+    gloves: ClothingHandsGlovesCombat
+    outerClothing: ClothingOuterHardsuitERTChaplain
+    suitstorage: AirTankFilled
+    id: ERTChaplainPDA
+    ears: ClothingHeadsetAltCentCom
+    belt: ClothingBeltStorageWaistbag
+    pocket1: Flare
+    pocket2: DrinkWaterBottleFull
+
 # Engineer
 - type: job
   id: ERTEngineer
@@ -77,6 +134,8 @@
   canBeAntag: false
   accessGroups:
   - AllAccess
+  access:
+  - CentralCommand
 
 - type: startingGear
   id: ERTEngineerGear
@@ -88,7 +147,7 @@
     eyes: ClothingEyesGlassesMeson
     gloves: ClothingHandsGlovesCombat
     outerClothing: ClothingOuterArmorBasicSlim
-    id: ERTLeaderPDA
+    id: ERTEngineerPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltChiefEngineerFilled
     pocket1: Flare
@@ -105,7 +164,7 @@
     gloves: ClothingHandsGlovesCombat
     outerClothing: ClothingOuterHardsuitERTEngineer
     suitstorage: AirTankFilled
-    id: ERTLeaderPDA
+    id: ERTEngineerPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltChiefEngineerFilled
     pocket1: Flare
@@ -124,6 +183,8 @@
   canBeAntag: false
   accessGroups:
   - AllAccess
+  access:
+  - CentralCommand
 
 - type: startingGear
   id: ERTSecurityGear
@@ -135,7 +196,7 @@
     eyes: ClothingEyesGlassesSecurity
     gloves: ClothingHandsGlovesCombat
     outerClothing: ClothingOuterArmorBasicSlim
-    id: ERTLeaderPDA
+    id: ERTSecurityPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltSecurityFilled
     pocket1: WeaponPistolMk58Nonlethal
@@ -152,7 +213,7 @@
     gloves: ClothingHandsGlovesCombat
     outerClothing: ClothingOuterHardsuitERTSecurity
     suitstorage: AirTankFilled
-    id: ERTLeaderPDA
+    id: ERTSecurityPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltSecurityFilled
     pocket1: WeaponPistolMk58Nonlethal
@@ -169,7 +230,7 @@
     gloves: ClothingHandsGlovesCombat
     outerClothing: ClothingOuterHardsuitERTSecurity
     suitstorage: WeaponRifleLecter
-    id: ERTLeaderPDA
+    id: ERTSecurityPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltSecurityFilled
     pocket1: MagazineRifle
@@ -190,6 +251,8 @@
   canBeAntag: false
   accessGroups:
   - AllAccess
+  access:
+  - CentralCommand
 
 - type: startingGear
   id: ERTMedicalGear
@@ -201,11 +264,10 @@
     eyes: ClothingEyesHudMedical
     gloves: ClothingHandsGlovesNitrile
     outerClothing: ClothingOuterArmorBasicSlim
-    id: ERTLeaderPDA
+    id: ERTMedicPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltMedicalFilled
-    pocket1: HandheldHealthAnalyzer
-    pocket2: Flare
+    pocket1: Flare
 
 - type: startingGear
   id: ERTMedicalGearEVA
@@ -218,11 +280,10 @@
     gloves: ClothingHandsGlovesNitrile
     outerClothing: ClothingOuterHardsuitERTMedical
     suitstorage: AirTankFilled
-    id: ERTLeaderPDA
+    id: ERTMedicPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltMedicalFilled
-    pocket1: HandheldHealthAnalyzer
-    pocket2: Flare
+    pocket1: Flare
 
 # Janitor
 - type: job
@@ -237,6 +298,8 @@
   canBeAntag: false
   accessGroups:
   - AllAccess
+  access:
+  - CentralCommand
 
 - type: startingGear
   id: ERTJanitorGear
@@ -247,7 +310,7 @@
     head: ClothingHeadHelmetERTJanitor
     gloves: ClothingHandsGlovesColorPurple
     outerClothing: ClothingOuterArmorBasicSlim
-    id: ERTLeaderPDA
+    id: ERTJanitorPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltJanitorFilled
     pocket1: Flare
@@ -262,7 +325,7 @@
     gloves: ClothingHandsGlovesColorPurple
     outerClothing: ClothingOuterHardsuitERTJanitor
     suitstorage: AirTankFilled
-    id: ERTLeaderPDA
+    id: ERTJanitorPDA
     ears: ClothingHeadsetAltCentCom
     belt: ClothingBeltJanitorFilled
     pocket1: Flare
